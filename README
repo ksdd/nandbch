@@ -21,12 +21,12 @@
          */
       .page_size   = 2048,
         /*
-         * Page size is 2048
+         * Nandflash page size
          * Check nand datasheet
          */
       .spare_size  = 64,
         /*
-         * Spare area size is 64
+         * Nandflash spare size
          * Check nand datasheet
          */
       .ecc_sector  = 512,
@@ -39,6 +39,7 @@
          */
       .ecc_bytes   = 7,
         /*
+         * ECC bytes per sector
          * Get minimum ECC bits from nand datasheet, or from ONFI parameter page if supported
          * Then calculate ECC bytes by minimum ECC bits and ECC sector size
          *
@@ -66,6 +67,7 @@
          */ 
       .boot_header = 0xc0902405
         /*
+         * Nandflash boot header for SAMA5Dx
          * Check following chapter in SAMA5D2 datasheet for detail information:
          * "16.5.7.1.1 NAND Flash Specific Header Detection (Recommended Solution)"
          */

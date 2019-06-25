@@ -174,10 +174,6 @@ int nandbch(struct nand_chip *nand, const char *file_in, const char *file_out, i
 		goto OUT_4;
 	}
 
-	if (nand->ecc_addr == -1) { // Use right-aligned
-		nand->ecc_addr = nand->spare_size - (nand->page_size/nand->ecc_sector*nand->ecc_bytes);
-	}
-
 	while (1) {
 		if (header) {
 			header = 0;
