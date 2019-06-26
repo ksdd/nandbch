@@ -10,24 +10,24 @@
 
     make distclean
 
-* Add new nand chip support:
+* Add new NAND chip support:
     Update nand_chips[] structure array in main.c
     For example with MT29F4G08ABADAWP:
     {
       .name = "MT29F4G08ABADAWP",
         /* 
-         * Part number of nandflash
-         * Check nand datasheet
+         * Part number of NAND Flash
+         * Check NAND datasheet
          */
       .page_size   = 2048,
         /*
-         * Nandflash page size
-         * Check nand datasheet
+         * NAND Flash page size
+         * Check NAND datasheet
          */
       .spare_size  = 64,
         /*
-         * Nandflash spare size
-         * Check nand datasheet
+         * NAND Flash spare size
+         * Check NAND datasheet
          */
       .ecc_sector  = 512,
         /*
@@ -35,12 +35,12 @@
          * By default, set to 512 bytes;
          * Or to 1024 bytes if the ECC bit capability is 0xFF
          *
-         * Value of ECC sector size also could be get from nand datasheet
+         * Value of ECC sector size also could be get from NAND datasheet
          */
       .ecc_bytes   = 7,
         /*
          * ECC bytes per sector
-         * Get minimum ECC bits from nand datasheet, or from ONFI parameter page if supported
+         * Get minimum ECC bits from NAND datasheet, or from ONFI parameter page if supported
          * Then calculate ECC bytes by minimum ECC bits and ECC sector size
          *
          * For example:
@@ -55,11 +55,11 @@
          */
       .ecc_addr    = -1, /* -1 means right-aligned, used as array index which start from 0 */
         /*
-         * Offset address in nand oob area for ECC codes
+         * Offset address in NAND Flash oob area for ECC codes
          * Will be used as array index
          * Normally it is right-aligned
          *
-         * For this nand:
+         * For this NAND Flash:
          * ECC bytes = page_size / ecc_sector * ecc_bytes = 2048 / 512 * 7 = 28
          * Then address = spare_size - ECC bytes + 1 = 64 - 28 + 1 = 37
          * Cause of ecc_addr will be used as array index which start from 0
@@ -67,7 +67,7 @@
          */ 
       .boot_header = 0xc0902405
         /*
-         * Nandflash boot header for SAMA5Dx
+         * NAND Flash boot header for SAMA5Dx
          * Check following chapter in SAMA5D2 datasheet for detail information:
          * "16.5.7.1.1 NAND Flash Specific Header Detection (Recommended Solution)"
          */

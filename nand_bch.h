@@ -9,7 +9,7 @@ struct nand_chip {
 	int  ecc_bytes;
 	int  ecc_addr; /* -1 means right-aligned, used as array index which start from 0 */
 	unsigned int boot_header; /* 
-                             * Nandflash and PMECC parameter header
+                             * NAND Flash and PMECC parameter header
                              * Check SAMA5Dx datasheet for more information.
                              */
 };

@@ -27,20 +27,20 @@ static void usage()
 {
 	fprintf(stderr,
 		"Usage: nandbch [OPTION] <INFILE> <OUTFILE>\n"
-		"Generate OOB data which include BCH code for Nandflash production image\n"
+		"Generate OOB data which include BCH code for NAND Flash production image\n"
 		"\n"
 		"Options:\n"
-		"  -m, --model=n     Use predefined Nandflash model, model number start from 1\n"
-		"  -i, --input       Use input Nandflash parameter\n"
-		"      --page-size   Nandflash page size\n"
-		"      --spare-size  Nandflash spare size\n"
+		"  -m, --model=n     Use predefined NAND Flash model, model number start from 1\n"
+		"  -i, --input       Use input NAND Flash parameter\n"
+		"      --page-size   NAND Flash page size\n"
+		"      --spare-size  NAND Flash spare size\n"
 		"      --ecc-sector  ECC sector size\n"
 		"      --ecc-bytes   ECC bytes per sector\n"
 		"      --ecc-addr    ECC code address in spare area\n"
-		"      --boot-header Nandflash boot header, check SAMA5Dx datasheet\n"
+		"      --boot-header NAND Flash boot header, check SAMA5Dx datasheet\n"
 		"  -p, --pmecc       Generate SAMA5Dx PMECC format BCH code\n"
 		"  -b, --boot        Add boot header for AT91 Bootstrap\n"
-		"  -l, --list        List predefined Nandflash models\n");
+		"  -l, --list        List predefined NAND Flash models\n");
 }
 
 static void dump_chips(struct nand_chip (*chips)[], int count, int index)
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
 	int use_input = 0;
 	int use_model = 0;
 	static int lopt;
-	struct nand_chip chip = {"Nandflash parameter"};
+	struct nand_chip chip = {"NAND Flash parameter"};
 
 	static struct option options[] = {
 		{"model"      , required_argument, NULL , 'm'},
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 				use_model = 1;
 				chip_no = strtol(optarg, NULL, 10);
 				if ((chip_no <= 0) || (chip_no > CHIP_COUNT)) {
-					fprintf(stderr, "%s: Error Nandflash model number, Use -l for help.\n", argv[0]);
+					fprintf(stderr, "%s: Error NAND Flash model number, Use -l for help.\n", argv[0]);
 					exit(EXIT_FAILURE);
 				}
 				break;
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 				fprintf(stderr, "Add boot header\n");
 				break;
 			case 'l':
-				fprintf(stderr, "Nandflash models:\n");
+				fprintf(stderr, "NAND Flash models:\n");
 				dump_chips(&chips, CHIP_COUNT, 1);
 				return 0;
 			case 'h':
@@ -162,16 +162,16 @@ int main(int argc, char **argv) {
 	}
 
 	if (!use_model && !use_input) {
-		fprintf(stderr, "Unspecified input source of parameters for Nandflash, use -m or -i to specify it\n");
+		fprintf(stderr, "Unspecified input source of parameters for NAND Flash, use -m or -i to specify it\n");
 		return -1;
 	} else if (use_model && use_input) {
-		fprintf(stderr, "Confused input source of parameters for Nandflash, -m and -i couldn't be used in the same time\n");
+		fprintf(stderr, "Confused input source of parameters for NAND Flash, -m and -i couldn't be used in the same time\n");
 		return -1;
 	} else if (use_model) {
-		fprintf(stderr, "Use predefined Nandflash model %d:\n", chip_no);
+		fprintf(stderr, "Use predefined NAND Flash model %d:\n", chip_no);
 		chip = chips[--chip_no];
 	} else if (use_input) {
-		fprintf(stderr, "Use input Nandflash parameter:\n");
+		fprintf(stderr, "Use input NAND Flash parameter:\n");
 	}
 
 	if (chip.ecc_addr == -1) { // Use right-aligned
