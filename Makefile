@@ -31,8 +31,8 @@ all: $(TARGET)
 $(TARGET): $(OBJECTS)
 	$(LD) $(CFLAGS) ${LDFLAGS} $(OBJECTS) -o $@
 	$(STRIP) $@
-	mkdir -p ./$(OUT_DIR)
-	cp $@ ./$(OUT_DIR)
+	@mkdir -p ./$(OUT_DIR)
+	@cp $@ ./$(OUT_DIR)
 
 clean:
 	-rm -f $(TARGET) *.o $(LINUX_DIR)/*.o *.map
