@@ -38,6 +38,7 @@ static void usage()
 		"      --ecc-sector  ECC sector size\n"
 		"      --ecc-bytes   ECC bytes per sector\n"
 		"      --ecc-offset  ECC code offset address in spare area\n"
+		"      --free-offset Free region offset address in spare area\n"
 		"      --boot-header NAND Flash boot header, check SAMA5Dx datasheet\n"
 		"  -p, --pmecc       Generate SAMA5Dx PMECC format BCH code\n"
 		"  -b, --boot        Add boot header for AT91 Bootstrap\n"
@@ -87,8 +88,9 @@ int main(int argc, char **argv) {
 		{"spare-size" , required_argument, &lopt,  2 },
 		{"ecc-sector" , required_argument, &lopt,  3 },
 		{"ecc-bytes"  , required_argument, &lopt,  4 },
-		{"ecc-addr"   , required_argument, &lopt,  5 },
-		{"boot-header", required_argument, &lopt,  6 },
+		{"ecc-offset" , required_argument, &lopt,  5 },
+		{"free-offset", required_argument, &lopt,  6 },
+		{"boot-header", required_argument, &lopt,  7 },
 		{"pmecc"      , no_argument      , NULL , 'p'},
 		{"boot"       , no_argument      , NULL , 'b'},
 		{"yaffs"      , no_argument      , NULL , 'y'},
@@ -153,6 +155,9 @@ int main(int argc, char **argv) {
 						chip.ecc_offset = strtol(optarg, NULL, 10);
 						break;
 					case 6:
+						chip.free_offset = strtol(optarg, NULL, 10);
+						break;
+					case 7:
 						chip.boot_header = strtol(optarg, NULL, 16);
 						break;
 					default:
