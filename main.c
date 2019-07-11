@@ -17,7 +17,8 @@ static struct nand_chip chips[] = {
 		.spare_size  = 64,
 		.ecc_sector  = 512,
 		.ecc_bytes   = 7,
-		.ecc_addr    = -1,
+		.ecc_offset  = -1,
+		.free_offset = 2,
 		.boot_header = 0xc0902405
 	}
 };
@@ -36,10 +37,11 @@ static void usage()
 		"      --spare-size  NAND Flash spare size\n"
 		"      --ecc-sector  ECC sector size\n"
 		"      --ecc-bytes   ECC bytes per sector\n"
-		"      --ecc-addr    ECC code address in spare area\n"
+		"      --ecc-offset  ECC code offset address in spare area\n"
 		"      --boot-header NAND Flash boot header, check SAMA5Dx datasheet\n"
 		"  -p, --pmecc       Generate SAMA5Dx PMECC format BCH code\n"
 		"  -b, --boot        Add boot header for AT91 Bootstrap\n"
+		"  -y, --yaffs       Input file is made by mkyaffs2image tool (contains OOB data)\n"
 		"  -l, --list        List predefined NAND Flash models\n");
 }
 
@@ -55,14 +57,16 @@ static void dump_chips(struct nand_chip (*chips)[], int count, int index)
 			"  spare_size : %d\n"
 			"  ecc_sector : %d\n"
 			"  ecc_bytes  : %d\n"
-			"  ecc_addr   : %d\n"
+			"  ecc_offset : %d\n"
+			"  free_offset: %d\n"
 			"  boot_header: 0x%08x\n",
 			(*chips)[i].name,
 			(*chips)[i].page_size,
 			(*chips)[i].spare_size,
 			(*chips)[i].ecc_sector,
 			(*chips)[i].ecc_bytes,
-			(*chips)[i].ecc_addr,
+			(*chips)[i].ecc_offset,
+			(*chips)[i].free_offset,
 			(*chips)[i].boot_header);
 	}
 }
@@ -70,10 +74,9 @@ static void dump_chips(struct nand_chip (*chips)[], int count, int index)
 int main(int argc, char **argv) {
 	int ret;
 	int chip_no   = 0;
-	int pmecc     = 0;
-	int header    = 0;
 	int use_input = 0;
 	int use_model = 0;
+	unsigned int flag = 0;
 	static int lopt;
 	struct nand_chip chip = {"NAND Flash parameter"};
 
@@ -88,11 +91,12 @@ int main(int argc, char **argv) {
 		{"boot-header", required_argument, &lopt,  6 },
 		{"pmecc"      , no_argument      , NULL , 'p'},
 		{"boot"       , no_argument      , NULL , 'b'},
+		{"yaffs"      , no_argument      , NULL , 'y'},
 		{"list"       , no_argument      , NULL , 'l'},
 		{"help"       , no_argument      , NULL , 'h'},
 		{0, 0, 0, 0}
 	};
-	char *opt_string   = "m:ipblh";
+	char *opt_string   = "m:ipbylh";
 
 	if (argc < 2) {
 		usage();
@@ -113,12 +117,16 @@ int main(int argc, char **argv) {
 				use_input = 1;
 				break;
 			case 'p':
-				pmecc = 1;
+				flag |= FLAG_PMECC;
 				fprintf(stderr, "Use PMECC format\n");
 				break;
 			case 'b':
-				header = 1;
+				flag |= FLAG_HEADER;
 				fprintf(stderr, "Add boot header\n");
+				break;
+			case 'y':
+				flag |= FLAG_YAFFS;
+				fprintf(stderr, "YAFFS image enabled\n");
 				break;
 			case 'l':
 				fprintf(stderr, "NAND Flash models:\n");
@@ -142,7 +150,7 @@ int main(int argc, char **argv) {
 						chip.ecc_bytes = strtol(optarg, NULL, 10);
 						break;
 					case 5:
-						chip.ecc_addr = strtol(optarg, NULL, 10);
+						chip.ecc_offset = strtol(optarg, NULL, 10);
 						break;
 					case 6:
 						chip.boot_header = strtol(optarg, NULL, 16);
@@ -174,13 +182,13 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Use input NAND Flash parameter:\n");
 	}
 
-	if (chip.ecc_addr == -1) { // Use right-aligned
-		chip.ecc_addr = chip.spare_size - (chip.page_size/chip.ecc_sector*chip.ecc_bytes);
+	if (chip.ecc_offset == -1) { // Use right-aligned
+		chip.ecc_offset = chip.spare_size - (chip.page_size/chip.ecc_sector*chip.ecc_bytes);
 	}
 
 	dump_chips((struct nand_chip (*)[])&chip, 1, 0);
 
-	ret = nandbch(&chip, argv[optind], argv[optind + 1], pmecc, header);
+	ret = nandbch(&chip, argv[optind], argv[optind + 1], flag);
 	if (!ret)
 		fprintf(stderr, "Done.\n");
 

@@ -124,7 +124,7 @@ static void nand_bch_free(struct nand_bch_control *nbc)
 	}
 }
 
-int nandbch(struct nand_chip *nand, const char *file_in, const char *file_out, int pmecc, int header)
+int nandbch(struct nand_chip *nand, const char *file_in, const char *file_out, unsigned int flag)
 {
 	int ret = -1;
 	int i;
@@ -157,7 +157,7 @@ int nandbch(struct nand_chip *nand, const char *file_in, const char *file_out, i
 	}
 	buf_spare = buf_page + nand->page_size;
 
-	if (pmecc) {
+	if (flag & FLAG_PMECC) {
 		rev_table = malloc(REV_TABLE_SIZE);
 		if (rev_table == NULL) {
 			fprintf(stderr, "%s: Error when malloc for reverse table.\n", __func__);
@@ -175,38 +175,63 @@ int nandbch(struct nand_chip *nand, const char *file_in, const char *file_out, i
 	}
 
 	while (1) {
-		if (header) {
-			header = 0;
+		if (flag & FLAG_HEADER) {
+			flag &= ~FLAG_HEADER;
 			for (i=0; i<REPEAT_TIMES; i++)
 				((unsigned int *)buf_page)[i] = nand->boot_header;
 
-			ret = read(fd_in, buf_page + REPEAT_TIMES*sizeof(unsigned int), nand->page_size - REPEAT_TIMES*sizeof(unsigned int));
+			ret = read(fd_in, buf_page + REPEAT_TIMES*sizeof(unsigned int),
+									nand->page_size - REPEAT_TIMES*sizeof(unsigned int));
 			if (ret > 0)
 				ret += REPEAT_TIMES*sizeof(unsigned int);
 		} else
 			ret = read(fd_in, buf_page, nand->page_size);
-		if (ret <= 0) // Error occur or end of file
+
+		if (ret < 0) { // Error occur
+			fprintf(stderr, "%s: Error when read %s.\n", __func__, file_in);
+			perror("read()");
+			ret = -1;
+			break;
+		} else if (ret == 0) // End of file
 			break;
 
 		if (ret < nand->page_size) { // Padding 0xff, page size aligned
 			memset(buf_page + ret, 0xff, nand->page_size - ret);
 		}
 
-		if (pmecc) {
+		if (flag & FLAG_PMECC) { // PMECC uses inverted bit order
 			for (i=0; i<nand->page_size; i++)
 				buf_page[i] = rev_table[buf_page[i]&0xff];
 		}
 
 		memset(buf_spare, 0xff, nand->spare_size);
-		for (i=0; i<nand->page_size/nand->ecc_sector; i++)
-			nand_bch_calculate_ecc(nbc_handle, buf_page+i*nand->ecc_sector,
-															nand->ecc_sector, buf_spare + nand->ecc_addr + i*nand->ecc_bytes);
+		if (flag & FLAG_YAFFS) { // For YAFFS image, read free region data from input file
+			ret = read(fd_in, buf_spare + nand->free_offset, nand->ecc_offset - nand->free_offset);
+			if (ret != (nand->ecc_offset - nand->free_offset)) {
+				fprintf(stderr, "%s: Error read free region from %s.\n", __func__, file_in);
+				perror("read()");
+				ret = -1;
+				break;
+			}
 
-		if (pmecc) {
-			for (i=0; i<nand->page_size; i++)
+			ret = lseek(fd_in, nand->spare_size - nand->ecc_offset + nand->free_offset, SEEK_CUR);
+			if (ret < 0) {
+				fprintf(stderr, "%s: Error lseek in %s.\n", __func__, file_in);
+				perror("lseek()");
+				ret = -1;
+				break;
+			}
+		}
+
+		for (i=0; i<nand->page_size/nand->ecc_sector; i++) // Generate ECC codes for every sector
+			nand_bch_calculate_ecc(nbc_handle, buf_page+i*nand->ecc_sector,
+															nand->ecc_sector, buf_spare + nand->ecc_offset + i*nand->ecc_bytes);
+
+		if (flag & FLAG_PMECC) {
+			for (i=0; i<nand->page_size; i++) // Recovery the bit order for data area
 				buf_page[i] = rev_table[buf_page[i]&0xff];
 
-			for (i=nand->ecc_addr; i<nand->spare_size; i++) 
+			for (i=nand->ecc_offset; i<nand->spare_size; i++) // Store ECC codes follow PMECC bit order
 				buf_spare[i] = rev_table[buf_spare[i]&0xff];
 		}
 
@@ -214,19 +239,15 @@ int nandbch(struct nand_chip *nand, const char *file_in, const char *file_out, i
 		if (ret != (nand->page_size + nand->spare_size)) {
 			fprintf(stderr, "%s: Error when write %s.\n", __func__, file_out);
 			perror("write()");
-			goto OUT_3;
+			ret = -1;
+			break;
 		}
 	}
 	
-	if(ret < 0) {
-		fprintf(stderr, "%s: Error when read %s.\n", __func__, file_in);
-		perror("read()");
-	}
-
 	nand_bch_free(nbc_handle);
 
 OUT_4:
-	if (pmecc)
+	if (flag | FLAG_PMECC)
 		free(rev_table);
 OUT_3:
 	free(buf_page);

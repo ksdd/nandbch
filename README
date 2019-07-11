@@ -53,9 +53,9 @@
          * ecc_bits = 13 * 4 = 52 bits
          * ecc bytes = 7 bytes
          */
-      .ecc_addr    = -1, /* -1 means right-aligned, used as array index which start from 0 */
+      .ecc_offset  = -1, /* -1 means right-aligned, used as array index which start from 0 */
         /*
-         * Offset address in NAND Flash oob area for ECC codes
+         * Offset address in NAND OOB area for ECC codes
          * Will be used as array index
          * Normally it is right-aligned
          *
@@ -64,7 +64,20 @@
          * Then address = spare_size - ECC bytes + 1 = 64 - 28 + 1 = 37
          * Cause of ecc_addr will be used as array index which start from 0
          * Then ecc_addr = address - 1 = 37 - 1 = 36
-         */ 
+         */
+      .free_offset = 2,
+        /*
+         * Offset address in NAND OOB area for free region
+         * Will be used as array index
+         * Mainly used to create YAFFS format image
+
+         * According to the NAND driver in kernel, OOB area are divided into three region:
+         * 1. Reserved region, used to store bad block identification
+         * 2. Free region, free to use, e.g. YAFFS use this region to store file system index
+         * 3. ECC region, used to store ECC codes
+         *
+         * Search with keywords "mtd_ooblayout_ops" in kernel source codes for more information
+         * /
       .boot_header = 0xc0902405
         /*
          * NAND Flash boot header for SAMA5Dx

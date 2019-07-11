@@ -7,7 +7,15 @@ struct nand_chip {
 	int  spare_size;
 	int  ecc_sector;
 	int  ecc_bytes;
-	int  ecc_addr; /* -1 means right-aligned, used as array index which start from 0 */
+	int  ecc_offset;  /*
+                     * ECC region offset address in the OOB area
+                     * -1 means right-aligned
+                     * used as array index which start from 0
+                     */
+	int  free_offset; /*
+                     * Free region start address in the OOB area
+                     * used as array index which start from 0
+                     */
 	unsigned int boot_header; /* 
                              * NAND Flash and PMECC parameter header
                              * Check SAMA5Dx datasheet for more information.
@@ -26,6 +34,10 @@ struct nand_bch_control {
 	unsigned char        *eccmask;
 };
 
-int nandbch(struct nand_chip *nand, const char *file_in, const char *file_out, int pmecc, int header);
+#define	FLAG_PMECC  0x01
+#define	FLAG_HEADER 0x02
+#define	FLAG_YAFFS  0x04
+
+int nandbch(struct nand_chip *nand, const char *file_in, const char *file_out, unsigned int flag);
 
 #endif /* _NAND_BCH_H */
