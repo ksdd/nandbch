@@ -34,9 +34,10 @@ struct nand_bch_control {
 	unsigned char        *eccmask;
 };
 
-#define	FLAG_PMECC  0x01
-#define	FLAG_HEADER 0x02
-#define	FLAG_YAFFS  0x04
+#define FLAG_PMECC   0x01
+#define FLAG_HEADER  0x02
+#define FLAG_YAFFS   0x04
+#define FLAG_NO_MASK 0x08
 
 int nandbch(struct nand_chip *nand, const char *file_in, const char *file_out, unsigned int flag);
 

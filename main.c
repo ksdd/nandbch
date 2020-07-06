@@ -12,7 +12,7 @@
 
 static struct nand_chip chips[] = {
 	{
-		.name = "MT29F4G08ABADAWP",
+		.name = "MT29F4G08ABADAWP, MT29F2G08ABAEAWP",
 		.page_size   = 2048,
 		.spare_size  = 64,
 		.ecc_sector  = 512,
@@ -41,6 +41,7 @@ static void usage()
 		"      --free-offset Free region offset address in spare area\n"
 		"      --boot-header NAND Flash boot header, check SAMA5Dx datasheet\n"
 		"  -p, --pmecc       Generate SAMA5Dx PMECC format BCH code\n"
+		"  -n, --no-mask     Don't mask ECC code to all 0xFF for empty page\n"
 		"  -b, --boot        Add boot header for AT91 Bootstrap\n"
 		"  -y, --yaffs       Input file is made by mkyaffs2image tool (contains OOB data)\n"
 		"  -l, --list        List predefined NAND Flash models\n");
@@ -92,13 +93,14 @@ int main(int argc, char **argv) {
 		{"free-offset", required_argument, &lopt,  6 },
 		{"boot-header", required_argument, &lopt,  7 },
 		{"pmecc"      , no_argument      , NULL , 'p'},
+		{"no-mask"    , no_argument      , NULL , 'n'},
 		{"boot"       , no_argument      , NULL , 'b'},
 		{"yaffs"      , no_argument      , NULL , 'y'},
 		{"list"       , no_argument      , NULL , 'l'},
 		{"help"       , no_argument      , NULL , 'h'},
 		{0, 0, 0, 0}
 	};
-	char *opt_string   = "m:ipbylh";
+	char *opt_string   = "m:ipnbylh";
 
 	if (argc < 2) {
 		usage();
@@ -121,6 +123,10 @@ int main(int argc, char **argv) {
 			case 'p':
 				flag |= FLAG_PMECC;
 				fprintf(stderr, "Use PMECC format\n");
+				break;
+			case 'n':
+				flag |= FLAG_NO_MASK;
+				fprintf(stderr, "No mask for empty page\n");
 				break;
 			case 'b':
 				flag |= FLAG_HEADER;

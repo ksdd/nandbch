@@ -15,7 +15,7 @@
 #define REPEAT_TIMES	52
 
 static unsigned char bit_reverse(unsigned char b);
-static int nand_bch_calculate_ecc(struct nand_bch_control *nand, const u_char *buf, int len, u_char *code);
+static int nand_bch_calculate_ecc(struct nand_bch_control *nand, const u_char *buf, int len, u_char *code, int no_mask);
 static struct nand_bch_control *nand_bch_init(struct nand_chip *nand);
 static void nand_bch_free(struct nand_bch_control *nbc);
 
@@ -47,7 +47,7 @@ static void dump(char *name, void *buf, int size)
 }
 #endif
 
-static int nand_bch_calculate_ecc(struct nand_bch_control *nbc, const u_char *buf, int len, u_char *code)
+static int nand_bch_calculate_ecc(struct nand_bch_control *nbc, const u_char *buf, int len, u_char *code, int no_mask)
 {
 	unsigned int i;
 
@@ -55,8 +55,10 @@ static int nand_bch_calculate_ecc(struct nand_bch_control *nbc, const u_char *bu
 	encode_bch(nbc->bch, buf, len, code);
 
 	/* apply mask so that an erased page is a valid codeword */
-	for (i = 0; i < nbc->bch->ecc_bytes; i++)
-		code[i] ^= nbc->eccmask[i];
+	if (!no_mask) {
+		for (i = 0; i < nbc->bch->ecc_bytes; i++)
+			code[i] ^= nbc->eccmask[i];
+	}
 
 	return 0;
 }
@@ -225,7 +227,8 @@ int nandbch(struct nand_chip *nand, const char *file_in, const char *file_out, u
 
 		for (i=0; i<nand->page_size/nand->ecc_sector; i++) // Generate ECC codes for every sector
 			nand_bch_calculate_ecc(nbc_handle, buf_page+i*nand->ecc_sector,
-															nand->ecc_sector, buf_spare + nand->ecc_offset + i*nand->ecc_bytes);
+															nand->ecc_sector, buf_spare + nand->ecc_offset + i*nand->ecc_bytes,
+															flag & FLAG_NO_MASK);
 
 		if (flag & FLAG_PMECC) {
 			for (i=0; i<nand->page_size; i++) // Recovery the bit order for data area
