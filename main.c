@@ -53,7 +53,7 @@ static void dump_chips(struct nand_chip (*chips)[], int count, int index)
 
 	for (i=0; i<count; i++) {
 		if (index)
-			fprintf(stderr, "%d:\n", i);
+			fprintf(stderr, "%d:\n", i+1);
 		fprintf(stderr,"  %s\n"
 			"  page_size  : %d\n"
 			"  spare_size : %d\n"
