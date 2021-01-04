@@ -22,7 +22,7 @@ static struct nand_chip chips[] = {
 		.boot_header = 0xc0902405
 	},
 	{
-		.name = "TC58NVG1S3HBAI4",
+		.name = "MX30LF1G28AD-TI, TC58NVG1S3HBAI4",
 		.page_size   = 2048,
 		.spare_size  = 128,
 		.ecc_sector  = 512,
@@ -30,6 +30,16 @@ static struct nand_chip chips[] = {
 		.ecc_offset  = -1,
 		.free_offset = 2,
 		.boot_header = 0xc1304805
+	},
+	{
+		.name = "MT29F4G08ABAEAWP",
+		.page_size   = 4096,
+		.spare_size  = 224,
+		.ecc_sector  = 512,
+		.ecc_bytes   = 13,
+		.ecc_offset  = -1,
+		.free_offset = 2,
+		.boot_header = 0xc1e04e07
 	}
 };
 #define CHIP_COUNT (sizeof(chips)/sizeof(struct nand_chip))
