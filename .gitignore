@@ -1,0 +1,5 @@
+*.o
+nandbch
+out_x86/
+out_arm/
+
