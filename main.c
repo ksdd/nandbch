@@ -22,7 +22,7 @@ static struct nand_chip chips[] = {
 		.boot_header = 0xc0902405
 	},
 	{
-		.name = "MX30LF1G28AD-TI",
+		.name = "MX30LF1G28AD-TI, TC58NVG1S3HBAI4",
 		.page_size   = 2048,
 		.spare_size  = 128,
 		.ecc_sector  = 512,
